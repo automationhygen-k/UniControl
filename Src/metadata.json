@@ -1,0 +1,7 @@
+{
+  "name": "UniControl",
+  "description": "A universal remote controller web application that transforms your device into a smart mouse and keyboard interface.",
+  "requestFramePermissions": [
+    "bluetooth"
+  ]
+}
