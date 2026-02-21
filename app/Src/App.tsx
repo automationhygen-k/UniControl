@@ -1,26 +1,23 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Trackpad from './Components/Trackpad';
 
 const App = () => {
-  const [targetIP, setTargetIP] = useState<string | null>(null);
+  const [deviceConnected, setDeviceConnected] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [mode, setMode] = useState<'mouse' | 'keyboard'>('mouse');
 
-  // Connection UI (The Square Box)
-  if (!targetIP) {
+  if (!deviceConnected) {
     return (
       <div className="flex items-center justify-center h-screen bg-black">
-        <div className="bg-white/5 backdrop-blur-2xl rounded-[35px] p-10 w-[85%] border border-white/10">
-          <h2 className="text-white/30 text-center text-[10px] tracking-[0.5em] mb-10 uppercase font-light">Direct Link</h2>
-          <input 
-            type="text"
-            placeholder="IP ADDRESS"
-            className="w-full bg-transparent border-b border-white/20 py-4 text-white text-center focus:outline-none focus:border-white transition-all mb-8 font-mono"
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') setTargetIP(e.currentTarget.value);
-            }}
-          />
-          <p className="text-white/10 text-[8px] text-center tracking-widest uppercase">Input device IP to bridge</p>
+        <div className="bg-white/5 backdrop-blur-2xl rounded-[35px] p-10 w-[85%] border border-white/10 text-center">
+          <h2 className="text-white/40 text-[10px] tracking-[0.5em] mb-10 uppercase">Hardware Link</h2>
+          <div className="animate-pulse text-white text-sm mb-8">Pairing Mode Active...</div>
+          <button 
+            onClick={() => setDeviceConnected(true)}
+            className="text-white/20 text-[9px] uppercase tracking-widest border border-white/10 px-6 py-3 rounded-full"
+          >
+            Tap once paired in BT Settings
+          </button>
         </div>
       </div>
     );
@@ -31,9 +28,9 @@ const App = () => {
       {/* The Aesthetic Dot (Top Right) */}
       <div 
         onClick={() => setIsMenuOpen(!isMenuOpen)}
-        className="absolute top-10 right-10 z-50 flex items-center justify-center transition-all duration-300 ease-out cursor-pointer"
+        className="absolute top-10 right-10 z-50 flex items-center justify-center transition-all duration-300 ease-out"
         style={{ 
-          width: isMenuOpen ? '28px' : '8px',  // ~0.75cm expanded, 0.2cm base
+          width: isMenuOpen ? '28px' : '8px', 
           height: isMenuOpen ? '28px' : '8px',
           backgroundColor: 'white',
           borderRadius: '50%',
@@ -47,17 +44,19 @@ const App = () => {
               setMode(mode === 'mouse' ? 'keyboard' : 'mouse');
               setIsMenuOpen(false);
             }}
-            className="w-full h-full flex items-center justify-center"
+            className="w-full h-full flex items-center justify-center cursor-pointer"
           >
-             {/* Minimalist icon representation */}
-             <div className="w-3 h-3 border border-black/20 flex flex-wrap gap-0.5 p-0.5">
-                {[...Array(4)].map((_, i) => <div key={i} className="w-1 h-1 bg-black/80" />)}
+             {/* Minimalist Grid Icon */}
+             <div className="grid grid-cols-2 gap-0.5">
+                <div className="w-1 h-1 bg-black rounded-full" />
+                <div className="w-1 h-1 bg-black rounded-full" />
+                <div className="w-1 h-1 bg-black rounded-full" />
+                <div className="w-1 h-1 bg-black rounded-full" />
              </div>
           </div>
         )}
       </div>
 
-      {/* Main Interface Area */}
       {mode === 'mouse' ? (
         <Trackpad /> 
       ) : (
@@ -65,7 +64,7 @@ const App = () => {
            <textarea 
             autoFocus 
             className="w-full h-full bg-black text-white text-xl focus:outline-none caret-white resize-none font-light"
-            placeholder="System Keyboard Active..."
+            placeholder="Keyboard ready..."
           />
         </div>
       )}
