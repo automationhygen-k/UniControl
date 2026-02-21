@@ -15,35 +15,35 @@ jobs:
         with:
           node-version: 18
 
-      - name: Setup Java
+      - name: Setup Java (Required for APK)
         uses: actions/setup-java@v4
         with:
           distribution: 'zulu'
           java-version: '17'
 
-      - name: Install Dependencies
+      - name: Install Tools
         run: |
           npm install
+          # We manually add the Android bridge here
           npm install @capacitor/core @capacitor/cli @capacitor/android
 
-      - name: Build Web Project
+      - name: Build Web Files
         run: npm run build
 
-      - name: Initialize Capacitor & Add Android
+      - name: Create Android Folder
         run: |
-          # This creates the configuration and the android folder
           npx cap init UniControl com.unicontrol.app --web-dir dist
           npx cap add android
           npx cap sync android
 
-      - name: Build APK (Gradle)
+      - name: Compile APK
         run: |
           cd android
           chmod +x gradlew
           ./gradlew assembleDebug
 
-      - name: Upload APK
+      - name: Upload Finished APK
         uses: actions/upload-artifact@v4
         with:
-          name: UniControl-Debug-APK
+          name: UniControl-App
           path: "Main folder/android/app/build/outputs/apk/debug/app-debug.apk"
