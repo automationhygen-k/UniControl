@@ -19,13 +19,18 @@ jobs:
           distribution: 'zulu'
           java-version: '17'
 
-      - name: Fix and Build
+      - name: Fix Case and Build
         run: |
           cd app
           
-          # This line fixes the uppercase 'Src' vs lowercase 'src' issue
+          # 1. Fix index.html to use 'Src'
           sed -i 's/\/src\//\/Src\//g' index.html
           
+          # 2. Fix App.tsx to use 'Components' instead of 'components'
+          # This command looks through all files and fixes the import path
+          find . -type f -name "*.tsx" -print0 | xargs -0 sed -i 's/from ".\/components\//from ".\/Components\//g'
+          find . -type f -name "*.tsx" -print0 | xargs -0 sed -i "s/from '.\/components\//from '.\/Components\//g"
+
           npm install
           npx vite build
           
@@ -41,5 +46,5 @@ jobs:
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: UniControl-Final
+          name: UniControl-APK
           path: "**/app-debug.apk"
