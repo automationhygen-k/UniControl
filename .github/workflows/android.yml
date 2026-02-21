@@ -19,29 +19,27 @@ jobs:
           distribution: 'zulu'
           java-version: '17'
 
-      - name: Fix CSS and Build
+      - name: Final Build and APK Generation
         run: |
           cd app
           
-          # 1. Fix index.html paths
+          # 1. Keep our path and CSS fixes
           sed -i 's/\/src\//\/Src\//g' index.html
-          
-          # 2. Fix Component imports
           find . -type f -name "*.tsx" -print0 | xargs -0 sed -i 's/from ".\/components\//from ".\/Components\//g'
           find . -type f -name "*.tsx" -print0 | xargs -0 sed -i "s/from '.\/components\//from '.\/Components\//g"
-
-          # 3. FIX THE CSS: Replace imports with standard Tailwind directives
-          # This stops the "Unknown word use strict" error
           echo -e "@tailwind base;\n@tailwind components;\n@tailwind utilities;" > Src/index.css
 
+          # 2. Build the web files
           npm install
           npx vite build
           
+          # 3. Setup Android (Removed the --confirm error)
           npm install @capacitor/core @capacitor/cli @capacitor/android
-          npx cap init UniControl com.unicontrol.app --web-dir dist --confirm
+          npx cap init UniControl com.unicontrol.app --web-dir dist
           npx cap add android
           npx cap sync android
           
+          # 4. Compile the APK
           cd android
           chmod +x gradlew
           ./gradlew assembleDebug
