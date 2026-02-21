@@ -19,31 +19,31 @@ jobs:
           distribution: 'zulu'
           java-version: '17'
 
-      - name: Automated Build Process
+      - name: Force Build
         run: |
-          # 1. Find where package.json is hidden
-          ROOT_DIR=$(find . -name "package.json" -not -path "*/node_modules/*" -exec dirname {} \; | head -n 1)
-          echo "Found project root at: $ROOT_DIR"
-          cd "$ROOT_DIR"
+          # We are going to try every possible path where your code might be
+          if [ -f "./package.json" ]; then export APP_DIR=".";
+          elif [ -f "./UniControl/package.json" ]; then export APP_DIR="./UniControl";
+          elif [ -f "./app/package.json" ]; then export APP_DIR="./app";
+          else echo "CRITICAL ERROR: package.json not found anywhere!"; exit 1;
+          fi
+          
+          echo "Moving into $APP_DIR"
+          cd "$APP_DIR"
 
-          # 2. Install and Build
           npm install
           npm run build
           npm install @capacitor/core @capacitor/cli @capacitor/android
-          
-          # 3. Create Android bridge
           npx cap init UniControl com.unicontrol.app --web-dir dist --confirm
           npx cap add android
           npx cap sync android
-
-          # 4. Compile APK
+          
           cd android
           chmod +x gradlew
           ./gradlew assembleDebug
 
-      - name: Upload Finished APK
+      - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: UniControl-Final-APK
-          # This searches EVERYWHERE for the .apk file
+          name: UniControl-Package
           path: "**/*.apk"
