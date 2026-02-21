@@ -1,22 +1,19 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import Trackpad from './Components/Trackpad';
 
 const App = () => {
-  const [deviceConnected, setDeviceConnected] = useState(false);
+  const [devicePaired, setDevicePaired] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [mode, setMode] = useState<'mouse' | 'keyboard'>('mouse');
 
-  if (!deviceConnected) {
+  if (!devicePaired) {
     return (
-      <div className="flex items-center justify-center h-screen bg-black">
-        <div className="bg-white/5 backdrop-blur-2xl rounded-[35px] p-10 w-[85%] border border-white/10 text-center">
-          <h2 className="text-white/40 text-[10px] tracking-[0.5em] mb-10 uppercase">Hardware Link</h2>
-          <div className="animate-pulse text-white text-sm mb-8">Pairing Mode Active...</div>
-          <button 
-            onClick={() => setDeviceConnected(true)}
-            className="text-white/20 text-[9px] uppercase tracking-widest border border-white/10 px-6 py-3 rounded-full"
-          >
-            Tap once paired in BT Settings
+      <div style={{ backgroundColor: '#000', height: '100vh', width: '100vw', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ backgroundColor: 'rgba(255,255,255,0.05)', backdropFilter: 'blur(20px)', borderRadius: '40px', padding: '50px', width: '80%', border: '1px solid rgba(255,255,255,0.1)', textAlign: 'center' }}>
+          <div style={{ width: '8px', height: '8px', backgroundColor: '#fff', borderRadius: '50%', margin: '0 auto 20px', opacity: 0.5 }}></div>
+          <h2 style={{ color: 'rgba(255,255,255,0.4)', fontSize: '10px', letterSpacing: '4px', marginBottom: '40px', textTransform: 'uppercase' }}>Hardware Link</h2>
+          <button onClick={() => setDevicePaired(true)} style={{ width: '100%', padding: '15px', backgroundColor: 'transparent', color: '#fff', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '15px', fontSize: '12px', letterSpacing: '2px' }}>
+            CONNECT DEVICE
           </button>
         </div>
       </div>
@@ -24,50 +21,15 @@ const App = () => {
   }
 
   return (
-    <div className="relative h-screen w-screen bg-black select-none touch-none overflow-hidden">
-      {/* The Aesthetic Dot (Top Right) */}
-      <div 
-        onClick={() => setIsMenuOpen(!isMenuOpen)}
-        className="absolute top-10 right-10 z-50 flex items-center justify-center transition-all duration-300 ease-out"
-        style={{ 
-          width: isMenuOpen ? '28px' : '8px', 
-          height: isMenuOpen ? '28px' : '8px',
-          backgroundColor: 'white',
-          borderRadius: '50%',
-          opacity: isMenuOpen ? 1 : 0.4
-        }}
-      >
+    <div style={{ backgroundColor: '#000', height: '100vh', width: '100vw', position: 'relative', overflow: 'hidden' }}>
+      <div onClick={() => setIsMenuOpen(!isMenuOpen)} style={{ position: 'absolute', top: '40px', right: '40px', zIndex: 100, backgroundColor: '#fff', borderRadius: '50%', transition: 'all 0.3s ease', width: isMenuOpen ? '32px' : '8px', height: isMenuOpen ? '32px' : '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: isMenuOpen ? 1 : 0.4 }}>
         {isMenuOpen && (
-          <div 
-            onClick={(e) => {
-              e.stopPropagation();
-              setMode(mode === 'mouse' ? 'keyboard' : 'mouse');
-              setIsMenuOpen(false);
-            }}
-            className="w-full h-full flex items-center justify-center cursor-pointer"
-          >
-             {/* Minimalist Grid Icon */}
-             <div className="grid grid-cols-2 gap-0.5">
-                <div className="w-1 h-1 bg-black rounded-full" />
-                <div className="w-1 h-1 bg-black rounded-full" />
-                <div className="w-1 h-1 bg-black rounded-full" />
-                <div className="w-1 h-1 bg-black rounded-full" />
-             </div>
+          <div onClick={(e) => { e.stopPropagation(); setMode(mode === 'mouse' ? 'keyboard' : 'mouse'); setIsMenuOpen(false); }} style={{ color: '#000', fontSize: '8px', fontWeight: 'bold' }}>
+            {mode === 'mouse' ? 'KB' : 'MS'}
           </div>
         )}
       </div>
-
-      {mode === 'mouse' ? (
-        <Trackpad /> 
-      ) : (
-        <div className="h-full w-full flex flex-col pt-32 px-10">
-           <textarea 
-            autoFocus 
-            className="w-full h-full bg-black text-white text-xl focus:outline-none caret-white resize-none font-light"
-            placeholder="Keyboard ready..."
-          />
-        </div>
-      )}
+      {mode === 'mouse' ? <Trackpad /> : <textarea autoFocus style={{ width: '100%', height: '100%', backgroundColor: '#000', color: '#fff', border: 'none', outline: 'none', fontSize: '24px', padding: '150px 40px' }} placeholder="..." />}
     </div>
   );
 };
