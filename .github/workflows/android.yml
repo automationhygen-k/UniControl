@@ -1,4 +1,4 @@
-name: Build Android APK
+name: Build UniControl HID
 on: [push]
 
 jobs:
@@ -16,25 +16,18 @@ jobs:
           distribution: 'zulu'
           java-version: '17'
 
-      - name: Build & Force Permissions
+      - name: Build & Hardware Injection
         run: |
           cd app
-          # Fix paths for your folder structure
           sed -i 's/\/src\//\/Src\//g' index.html
           echo -e "@tailwind base;\n@tailwind components;\n@tailwind utilities;" > Src/index.css
-          
           npm install && npx vite build
 
-          # Create the missing Capacitor config
           cat <<EOF > capacitor.config.json
           {
             "appId": "com.unicontrol.app",
             "appName": "UniControl",
-            "webDir": "dist",
-            "server": { 
-              "cleartext": true,
-              "allowNavigation": ["*"] 
-            }
+            "webDir": "dist"
           }
           EOF
 
@@ -42,11 +35,13 @@ jobs:
           rm -rf android
           npx cap add android
           
-          # Inject Permissions: Internet and Cleartext (HTTP)
+          # INJECT HARDWARE BLUETOOTH PERMISSIONS
           MANIFEST="android/app/src/main/AndroidManifest.xml"
-          sed -i '/<manifest/a \    <uses-permission android:name="android.permission.INTERNET" />' $MANIFEST
-          sed -i '/<manifest/a \    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />' $MANIFEST
-          sed -i '/<application/s/$/ android:usesCleartextTraffic="true"/' $MANIFEST
+          sed -i '/<manifest/a \    <uses-permission android:name="android.permission.BLUETOOTH" />' $MANIFEST
+          sed -i '/<manifest/a \    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />' $MANIFEST
+          sed -i '/<manifest/a \    <uses-permission android:name="android.permission.BLUETOOTH_SCAN" />' $MANIFEST
+          sed -i '/<manifest/a \    <uses-permission android:name="android.permission.BLUETOOTH_ADVERTISE" />' $MANIFEST
+          sed -i '/<manifest/a \    <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />' $MANIFEST
           
           npx cap sync android
           cd android && chmod +x gradlew && ./gradlew assembleDebug
@@ -54,5 +49,5 @@ jobs:
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: UniControl-WiFi-Build
+          name: UniControl-PlugAndPlay
           path: "**/app-debug.apk"
