@@ -19,23 +19,29 @@ jobs:
           distribution: 'zulu'
           java-version: '17'
 
-      - name: Build Project
+      - name: Find and Build
         run: |
-          cd app
+          # This finds where your app actually is
+          APP_PATH=$(find . -name "package.json" -not -path "*/node_modules/*" -exec dirname {} \;)
+          echo "Found app at: $APP_PATH"
+          cd "$APP_PATH"
+          
           npm install
           npm run build
           npm install @capacitor/core @capacitor/cli @capacitor/android
-          npx cap init UniControl com.unicontrol.app --web-dir dist
+          npx cap init UniControl com.unicontrol.app --web-dir dist --confirm
           npx cap add android
+          npx cap sync android
 
       - name: Build APK
         run: |
-          cd app/android
+          APP_PATH=$(find . -name "android" -not -path "*/node_modules/*" -type d -exec dirname {} \;)
+          cd "$APP_PATH/android"
           chmod +x gradlew
           ./gradlew assembleDebug
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: UniControl-App
-          path: app/android/app/build/outputs/apk/debug/app-debug.apk
+          name: UniControl-APK
+          path: "**/app-debug.apk"
