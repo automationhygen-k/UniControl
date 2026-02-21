@@ -19,29 +19,31 @@ jobs:
           distribution: 'zulu'
           java-version: '17'
 
-      - name: Find and Build
+      - name: Automated Build Process
         run: |
-          # This finds where your app actually is
-          APP_PATH=$(find . -name "package.json" -not -path "*/node_modules/*" -exec dirname {} \;)
-          echo "Found app at: $APP_PATH"
-          cd "$APP_PATH"
-          
+          # 1. Find where package.json is hidden
+          ROOT_DIR=$(find . -name "package.json" -not -path "*/node_modules/*" -exec dirname {} \; | head -n 1)
+          echo "Found project root at: $ROOT_DIR"
+          cd "$ROOT_DIR"
+
+          # 2. Install and Build
           npm install
           npm run build
           npm install @capacitor/core @capacitor/cli @capacitor/android
+          
+          # 3. Create Android bridge
           npx cap init UniControl com.unicontrol.app --web-dir dist --confirm
           npx cap add android
           npx cap sync android
 
-      - name: Build APK
-        run: |
-          APP_PATH=$(find . -name "android" -not -path "*/node_modules/*" -type d -exec dirname {} \;)
-          cd "$APP_PATH/android"
+          # 4. Compile APK
+          cd android
           chmod +x gradlew
           ./gradlew assembleDebug
 
-      - name: Upload APK
+      - name: Upload Finished APK
         uses: actions/upload-artifact@v4
         with:
-          name: UniControl-APK
-          path: "**/app-debug.apk"
+          name: UniControl-Final-APK
+          # This searches EVERYWHERE for the .apk file
+          path: "**/*.apk"
