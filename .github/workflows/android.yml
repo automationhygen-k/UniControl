@@ -19,17 +19,20 @@ jobs:
           distribution: 'zulu'
           java-version: '17'
 
-      - name: Fix Case and Build
+      - name: Fix CSS and Build
         run: |
           cd app
           
-          # 1. Fix index.html to use 'Src'
+          # 1. Fix index.html paths
           sed -i 's/\/src\//\/Src\//g' index.html
           
-          # 2. Fix App.tsx to use 'Components' instead of 'components'
-          # This command looks through all files and fixes the import path
+          # 2. Fix Component imports
           find . -type f -name "*.tsx" -print0 | xargs -0 sed -i 's/from ".\/components\//from ".\/Components\//g'
           find . -type f -name "*.tsx" -print0 | xargs -0 sed -i "s/from '.\/components\//from '.\/Components\//g"
+
+          # 3. FIX THE CSS: Replace imports with standard Tailwind directives
+          # This stops the "Unknown word use strict" error
+          echo -e "@tailwind base;\n@tailwind components;\n@tailwind utilities;" > Src/index.css
 
           npm install
           npx vite build
@@ -46,5 +49,5 @@ jobs:
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: UniControl-APK
+          name: UniControl-Final-APK
           path: "**/app-debug.apk"
