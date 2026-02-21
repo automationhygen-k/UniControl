@@ -1,32 +1,49 @@
 name: Build Android APK
 on: [push]
+
 jobs:
   build:
     runs-on: ubuntu-latest
-    # This tells GitHub to run all commands inside your folder
     defaults:
       run:
-        working-directory: "./Main folder" 
+        working-directory: "./Main folder"
     steps:
       - uses: actions/checkout@v4
 
-      - name: setup node
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 18
-          cache: 'npm'
-          # Points to the lock file inside your folder
-          cache-dependency-path: "./Main folder/package-lock.json"
 
-      - name: install dependencies
-        run: npm install
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '17'
 
-      - name: build project
+      - name: Install Dependencies
+        run: |
+          npm install
+          npm install @capacitor/core @capacitor/cli @capacitor/android
+
+      - name: Build Web Project
         run: npm run build
+
+      - name: Initialize Capacitor & Add Android
+        run: |
+          # This creates the configuration and the android folder
+          npx cap init UniControl com.unicontrol.app --web-dir dist
+          npx cap add android
+          npx cap sync android
+
+      - name: Build APK (Gradle)
+        run: |
+          cd android
+          chmod +x gradlew
+          ./gradlew assembleDebug
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: app-release
-          # This path must match where your project actually creates the APK
-          path: "./Main folder/android/app/build/outputs/apk/debug/app-debug.apk"
+          name: UniControl-Debug-APK
+          path: "Main folder/android/app/build/outputs/apk/debug/app-debug.apk"
