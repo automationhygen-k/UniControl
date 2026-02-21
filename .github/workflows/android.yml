@@ -4,46 +4,43 @@ on: [push]
 jobs:
   build:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: "./Main folder"
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout Code
+        uses: actions/checkout@v4
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 18
+          # Removed the npm cache step here so it stops crashing!
 
-      - name: Setup Java (Required for APK)
+      - name: Setup Java
         uses: actions/setup-java@v4
         with:
           distribution: 'zulu'
           java-version: '17'
 
-      - name: Install Tools
+      - name: Install and Build Web App
         run: |
+          cd "Main folder"
           npm install
-          # We manually add the Android bridge here
+          npm run build
           npm install @capacitor/core @capacitor/cli @capacitor/android
 
-      - name: Build Web Files
-        run: npm run build
-
-      - name: Create Android Folder
+      - name: Create Android App
         run: |
+          cd "Main folder"
           npx cap init UniControl com.unicontrol.app --web-dir dist
           npx cap add android
-          npx cap sync android
 
-      - name: Compile APK
+      - name: Build APK
         run: |
-          cd android
+          cd "Main folder/android"
           chmod +x gradlew
           ./gradlew assembleDebug
 
-      - name: Upload Finished APK
+      - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: UniControl-App
+          name: UniControl-APK
           path: "Main folder/android/app/build/outputs/apk/debug/app-debug.apk"
