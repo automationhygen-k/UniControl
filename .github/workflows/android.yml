@@ -21,7 +21,9 @@ jobs:
           cd app
           sed -i 's/\/src\//\/Src\//g' index.html
           echo -e "@tailwind base;\n@tailwind components;\n@tailwind utilities;" > Src/index.css
-          npm install && npx vite build
+          
+          npm install
+          npx vite build
 
           cat <<EOF > capacitor.config.json
           {
@@ -31,11 +33,11 @@ jobs:
           }
           EOF
 
-          npm install @capacitor/core @capacitor/cli @capacitor/android
+          npm install @capacitor/core @capacitor/cli @capacitor/android @capacitor-community/bluetooth-le
           rm -rf android
           npx cap add android
           
-          # INJECT HARDWARE BLUETOOTH PERMISSIONS
+          # Inject Hardware Permissions and HID Class ID
           MANIFEST="android/app/src/main/AndroidManifest.xml"
           sed -i '/<manifest/a \    <uses-permission android:name="android.permission.BLUETOOTH" />' $MANIFEST
           sed -i '/<manifest/a \    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />' $MANIFEST
@@ -43,11 +45,14 @@ jobs:
           sed -i '/<manifest/a \    <uses-permission android:name="android.permission.BLUETOOTH_ADVERTISE" />' $MANIFEST
           sed -i '/<manifest/a \    <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />' $MANIFEST
           
+          # Force iPad to see this as a Mouse (HID Pointer class)
+          sed -i '/<application/a \    <meta-data android:name="android.bluetooth.device.class" android:value="0x000580" />' $MANIFEST
+          
           npx cap sync android
           cd android && chmod +x gradlew && ./gradlew assembleDebug
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: UniControl-PlugAndPlay
+          name: UniControl-Final
           path: "**/app-debug.apk"
