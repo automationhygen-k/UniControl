@@ -1,43 +1,76 @@
 import React, { useState } from 'react';
 import Trackpad from './Components/Trackpad';
-import Controller from './Components/Controller';
 
-function App() {
-  const [connectionMode, setConnectionMode] = useState<null | 'PC' | 'iPad'>(null);
+const App = () => {
+  const [targetIP, setTargetIP] = useState<string | null>(null);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [mode, setMode] = useState<'mouse' | 'keyboard'>('mouse');
 
-  if (!connectionMode) {
+  // Connection UI (The Square Box)
+  if (!targetIP) {
     return (
-      <div className="flex flex-col items-center justify-center h-screen bg-slate-900 text-white p-6">
-        <h1 className="text-3xl font-bold mb-8">Connect UniControl To:</h1>
-        <button 
-          onClick={() => setConnectionMode('PC')}
-          className="w-full max-w-xs mb-4 p-6 bg-blue-600 rounded-xl text-xl font-semibold shadow-lg active:scale-95 transition-transform"
-        >
-          💻 Connect to PC
-        </button>
-        <button 
-          onClick={() => setConnectionMode('iPad')}
-          className="w-full max-w-xs p-6 bg-purple-600 rounded-xl text-xl font-semibold shadow-lg active:scale-95 transition-transform"
-        >
-          📱 Connect to iPad
-        </button>
+      <div className="flex items-center justify-center h-screen bg-black">
+        <div className="bg-white/5 backdrop-blur-2xl rounded-[35px] p-10 w-[85%] border border-white/10">
+          <h2 className="text-white/30 text-center text-[10px] tracking-[0.5em] mb-10 uppercase font-light">Direct Link</h2>
+          <input 
+            type="text"
+            placeholder="IP ADDRESS"
+            className="w-full bg-transparent border-b border-white/20 py-4 text-white text-center focus:outline-none focus:border-white transition-all mb-8 font-mono"
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') setTargetIP(e.currentTarget.value);
+            }}
+          />
+          <p className="text-white/10 text-[8px] text-center tracking-widest uppercase">Input device IP to bridge</p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="relative h-screen w-screen bg-black overflow-hidden">
-      <button 
-        onClick={() => setConnectionMode(null)}
-        className="absolute top-4 left-4 z-50 bg-white/20 p-2 rounded text-sm text-white"
+    <div className="relative h-screen w-screen bg-black select-none touch-none overflow-hidden">
+      {/* The Aesthetic Dot (Top Right) */}
+      <div 
+        onClick={() => setIsMenuOpen(!isMenuOpen)}
+        className="absolute top-10 right-10 z-50 flex items-center justify-center transition-all duration-300 ease-out cursor-pointer"
+        style={{ 
+          width: isMenuOpen ? '28px' : '8px',  // ~0.75cm expanded, 0.2cm base
+          height: isMenuOpen ? '28px' : '8px',
+          backgroundColor: 'white',
+          borderRadius: '50%',
+          opacity: isMenuOpen ? 1 : 0.4
+        }}
       >
-        ← Back
-      </button>
-      
-      {/* This renders the actual trackpad/controller logic */}
-      <Trackpad mode={connectionMode} />
+        {isMenuOpen && (
+          <div 
+            onClick={(e) => {
+              e.stopPropagation();
+              setMode(mode === 'mouse' ? 'keyboard' : 'mouse');
+              setIsMenuOpen(false);
+            }}
+            className="w-full h-full flex items-center justify-center"
+          >
+             {/* Minimalist icon representation */}
+             <div className="w-3 h-3 border border-black/20 flex flex-wrap gap-0.5 p-0.5">
+                {[...Array(4)].map((_, i) => <div key={i} className="w-1 h-1 bg-black/80" />)}
+             </div>
+          </div>
+        )}
+      </div>
+
+      {/* Main Interface Area */}
+      {mode === 'mouse' ? (
+        <Trackpad /> 
+      ) : (
+        <div className="h-full w-full flex flex-col pt-32 px-10">
+           <textarea 
+            autoFocus 
+            className="w-full h-full bg-black text-white text-xl focus:outline-none caret-white resize-none font-light"
+            placeholder="System Keyboard Active..."
+          />
+        </div>
+      )}
     </div>
   );
-}
+};
 
 export default App;
