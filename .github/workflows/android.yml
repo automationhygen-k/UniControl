@@ -19,21 +19,21 @@ jobs:
           distribution: 'zulu'
           java-version: '17'
 
-      - name: Force Build APK
+      - name: Fix and Build
         run: |
           cd app
-          npm install
           
-          # We skip 'npm run build' and run vite directly to avoid the tsc error
+          # This line fixes the uppercase 'Src' vs lowercase 'src' issue
+          sed -i 's/\/src\//\/Src\//g' index.html
+          
+          npm install
           npx vite build
           
-          # Install and setup the Android bridge
           npm install @capacitor/core @capacitor/cli @capacitor/android
           npx cap init UniControl com.unicontrol.app --web-dir dist --confirm
           npx cap add android
           npx cap sync android
           
-          # Build the final file
           cd android
           chmod +x gradlew
           ./gradlew assembleDebug
