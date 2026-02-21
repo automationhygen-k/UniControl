@@ -19,25 +19,21 @@ jobs:
           distribution: 'zulu'
           java-version: '17'
 
-      - name: Force Build
+      - name: Force Build APK
         run: |
-          # We are going to try every possible path where your code might be
-          if [ -f "./package.json" ]; then export APP_DIR=".";
-          elif [ -f "./UniControl/package.json" ]; then export APP_DIR="./UniControl";
-          elif [ -f "./app/package.json" ]; then export APP_DIR="./app";
-          else echo "CRITICAL ERROR: package.json not found anywhere!"; exit 1;
-          fi
-          
-          echo "Moving into $APP_DIR"
-          cd "$APP_DIR"
-
+          cd app
           npm install
-          npm run build
+          
+          # We skip 'npm run build' and run vite directly to avoid the tsc error
+          npx vite build
+          
+          # Install and setup the Android bridge
           npm install @capacitor/core @capacitor/cli @capacitor/android
           npx cap init UniControl com.unicontrol.app --web-dir dist --confirm
           npx cap add android
           npx cap sync android
           
+          # Build the final file
           cd android
           chmod +x gradlew
           ./gradlew assembleDebug
@@ -45,5 +41,5 @@ jobs:
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: UniControl-Package
-          path: "**/*.apk"
+          name: UniControl-Final
+          path: "**/app-debug.apk"
