@@ -3,15 +3,30 @@ on: [push]
 jobs:
   build:
     runs-on: ubuntu-latest
+    # This tells GitHub to run all commands inside your folder
+    defaults:
+      run:
+        working-directory: "./Main folder" 
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+
+      - name: setup node
+        uses: actions/setup-node@v4
         with:
           node-version: 18
-      - run: npm install
-      - run: npm run build
+          cache: 'npm'
+          # Points to the lock file inside your folder
+          cache-dependency-path: "./Main folder/package-lock.json"
+
+      - name: install dependencies
+        run: npm install
+
+      - name: build project
+        run: npm run build
+
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: app-release
-          path: android/app/build/outputs/apk/debug/app-debug.apk
+          # This path must match where your project actually creates the APK
+          path: "./Main folder/android/app/build/outputs/apk/debug/app-debug.apk"
